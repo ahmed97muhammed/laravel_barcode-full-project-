@@ -9,157 +9,128 @@ use Validator;
 class ProductController extends Controller
 {
 
-private $repository;
+    private $repository;
 
-public function __construct(ProductRepositoryInterface $repository)
-{
-$this->repository=$repository; 
+    public function __construct(ProductRepositoryInterface $repository)
+    {
+        $this->repository=$repository; 
 
-$this->middleware('auth');
+        $this->middleware('auth');
 
-}
+    }
+    
+    public function viewproducts()
+    {
+        $allproducts=$this->repository->getAll();
 
-//Start Functions
+        return view("viewproducts",compact("allproducts"));
+    } 
 
-public function viewproducts()
-{
-$allproducts=$this->repository->getAll();
-
-return view("viewproducts",compact("allproducts"));
-} 
-
-public function addproduct()
-{
-return view("addproduct");
-} 
+    public function addproduct()
+    {
+        return view("addproduct");
+    } 
 
 
-public function addproduct_form_ajax_url(Request $request)
-{
+    public function addproduct_form_ajax_url(Request $request)
+    {
+        if(request()->ajax()) {
+            $product=[
+            "product_name"=>$request->product_name,
+            "purchasing_price"=>$request->purchasing_price,
+            "selling_price"=>$request->selling_price,
+            ]; 
 
-if(request()->ajax()) {
+            $createproduct=$this->repository->createProduct($product);
 
-$product=[
-"product_name"=>$request->product_name,
-"purchasing_price"=>$request->purchasing_price,
-"selling_price"=>$request->selling_price,
-]; 
+            if ($createproduct["content"]=="error")
+            {
+                return response()->json('error',500);
+            }
 
-$createproduct=$this->repository->createProduct($product);
+        }
 
-if ($createproduct["content"]=="error")
-{
-    return response()->json('error',500);
-}
-//End Ajax
-}
+    } 
 
-} 
+    public function get_editproduct_form_ajax_url(Request $request)
+    {
+        if(request()->ajax()) {
+            
+            $getproduct=$this->repository->getProduct($request->id);
+            return $getproduct;
 
-/////////////
+        }
 
+    }
 
+    public function edit_product_form_ajax_url(Request $request)
+    {
 
-public function get_editproduct_form_ajax_url(Request $request)
-{
+        if(request()->ajax()) {
 
-if(request()->ajax()) {
+            $getp=$this->repository->getProduct($request->id);
 
-$getproduct=$this->repository->getProduct($request->id);
+            $product=[
+            "product_name"=>$request->product_name,
+            "purchasing_price"=>$request->purchasing_price,
+            "selling_price"=>$request->selling_price,
+            ]; 
 
-return $getproduct;
+            $updateproduct=$this->repository->updateProduct($product,$request->id);
 
-}
+            if ($updateproduct["content"]=="error")
+            {
+                return response()->json('error',500);
+            }
 
+            else{
+            if($request->purchasing_price != $getp['purchasing_price'])
+            {
 
-}
+                $getproducts_count=$this->repository->getcountproducts();
+                $getproducts=$this->repository->getAll();
 
-///////////////////
+                $total_purchase_price=0;
+                $total_selling_price=0;
 
-public function edit_product_form_ajax_url(Request $request)
-{
+                foreach($getproducts as $product)
+                {
+                $total_purchase_price+=$product->purchasing_price;
 
-if(request()->ajax()) {
+                $total_selling_price+=$product->selling_price;
 
-$getp=$this->repository->getProduct($request->id);
+                }
 
-$product=[
-"product_name"=>$request->product_name,
-"purchasing_price"=>$request->purchasing_price,
-"selling_price"=>$request->selling_price,
-]; 
+                $p_avg=$total_purchase_price/$getproducts_count;
+                $s_avg=$total_selling_price/$getproducts_count;
 
-$updateproduct=$this->repository->updateProduct($product,$request->id);
+                $purchase_average=number_format($p_avg);
+                $selling_average=number_format($s_avg);;
 
-if ($updateproduct["content"]=="error")
-{
-    return response()->json('error',500);
-}
-
-else{
-if($request->purchasing_price != $getp['purchasing_price'])
-{
-
-$getproducts_count=$this->repository->getcountproducts();
-$getproducts=$this->repository->getAll();
-
-$total_purchase_price=0;
-$total_selling_price=0;
-
-foreach($getproducts as $product)
-{
-$total_purchase_price+=$product->purchasing_price;
-
-$total_selling_price+=$product->selling_price;
-
-}
-
-$p_avg=$total_purchase_price/$getproducts_count;
-$s_avg=$total_selling_price/$getproducts_count;
-
-$purchase_average=number_format($p_avg);
-$selling_average=number_format($s_avg);;
-
-return [
-$request->id,
-$request->product_name,
-$request->purchasing_price,
-$request->selling_price,
-$purchase_average,
-$selling_average,
-];
-}
-else{
-return [
-$request->id,
-$request->product_name,
-$request->purchasing_price,
-$request->selling_price,
-"",
-];
-}
+                return [
+                $request->id,
+                $request->product_name,
+                $request->purchasing_price,
+                $request->selling_price,
+                $purchase_average,
+                $selling_average,
+                ];
+            }
+            else{
+                return [
+                $request->id,
+                $request->product_name,
+                $request->purchasing_price,
+                $request->selling_price,
+                "",
+                ];
+            }
 
 
-}
-//End Ajax
-}
+            }
 
-} 
+        }
 
+    } 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//End File
 }
