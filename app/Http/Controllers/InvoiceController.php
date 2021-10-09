@@ -31,8 +31,6 @@ class InvoiceController extends Controller
 
             ]);
 
-
-
             if($validation->passes())
             {
                 $getproduct=DB::table("products")->where("id",$request->product_id)->get();
@@ -53,15 +51,12 @@ class InvoiceController extends Controller
                 $invo_number=$in_numo[0]->invoice_number;;
                 }
 
-
                 DB::table("invoice_content")->insert([
                 "related_invoice_id"=>$invoices_id,
                 "product_quantity"=>$request->product_quantity,
                 "product_name"=>$getproduct[0]->product_name,
                 "total"=>$request->product_quantity*$getproduct[0]->selling_price,
                 ]);
-
-
 
                 $gettotal=DB::table("invoice_content")->where("related_invoice_id",$invoices_id)->get();
 
@@ -71,7 +66,6 @@ class InvoiceController extends Controller
                 {
                     $totaloftotal+=$total->total;
                 }
-
 
                 DB::table("invoices")->where("id",$invoices_id)->update([
 
