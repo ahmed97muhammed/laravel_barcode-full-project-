@@ -54,7 +54,8 @@ class ProductController extends Controller
 
     public function get_editproduct_form_ajax_url(Request $request)
     {
-        if(request()->ajax()) {
+        if(request()->ajax())
+        {
             
             $getproduct=$this->repository->getProduct($request->id);
             return $getproduct;
@@ -83,9 +84,10 @@ class ProductController extends Controller
                 return response()->json('error',500);
             }
 
-            else{
-            if($request->purchasing_price != $getp['purchasing_price'])
+            else
             {
+                if($request->purchasing_price != $getp['purchasing_price'])
+                {
 
                 $getproducts_count=$this->repository->getcountproducts();
                 $getproducts=$this->repository->getAll();
@@ -115,8 +117,8 @@ class ProductController extends Controller
                 $purchase_average,
                 $selling_average,
                 ];
-            }
-            else{
+                }
+                else{
                 return [
                 $request->id,
                 $request->product_name,
@@ -124,7 +126,7 @@ class ProductController extends Controller
                 $request->selling_price,
                 "",
                 ];
-            }
+                }
 
 
             }
